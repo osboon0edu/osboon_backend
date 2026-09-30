@@ -359,6 +359,13 @@ Issue Closure
 
 **لا يبدأ التنفيذ قبل اكتمال Implementation Context Review.**
 
+الهدف:
+- التأكد من وضوح الهدف.
+- التأكد من صحة النطاق.
+- التأكد من Dependencies.
+- التأكد من Definition of Done.
+- التأكد من أن المطلوب هو العمل المناسب للمرحلة الحالية.
+
 #### 4. Consistency Review
 
 تتم **فور اكتمال التنفيذ** وقبل فتح الـPull Request، ولا تنتظر هذه المراجعة فتح الـPull Request.
