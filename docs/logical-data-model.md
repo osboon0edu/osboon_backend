@@ -48,22 +48,41 @@
 
 #### 2. `Account`
 - **الغرض المفاهيمي:** الحساب الوظيفي المملوك لـ `Identity` ويمثل سياقًا تعليميًا محددًا.
-- **المفتاح الأساسي (PK):** `id`.
-- **المفتاح الأجنبي (FK):** `identity_id` → `Identity.id`, إلزامية.
-- **السمات:** `id`, `identity_id`, `display_name`, `status`, `created_at`, `updated_at`.
-- **العلاقة:** `Identity` يمكن أن تملك أكثر من `Account`، وكل `Account` يتبع `Identity` واحدة.
+- **المفتاح الأساسي (PK):** `id` (Identifier)
+- **المفاتيح الأجنبية (FK):**
+  - `identity_id`: Identifier → يشير إلى `Identity.id`, إلزامية.
+- **السمات (Attributes):**
+  - `id`: Identifier, إلزامية (PK).
+  - `identity_id`: Identifier, إلزامية (FK).
+  - `display_name`: Text, إلزامية.
+  - `status`: String, إلزامية.
+  - `created_at`: Timestamp, إلزامية.
+  - `updated_at`: Timestamp, إلزامية.
+- **القيود المنطقية (Constraints):**
+  - يمكن لـ `Identity` واحدة امتلاك أكثر من `Account`.
+  - كل `Account` يتبع `Identity` واحدة فقط.
 
 #### 3. `StudentAccount`
 - **الغرض المفاهيمي:** التخصص الوظيفي للحساب في سياق الطالب.
-- **المفتاح الأساسي (PK):** `account_id`.
-- **المفتاح الأجنبي:** `account_id` → `Account.id`.
-- **العلاقة:** `Account` يمكن أن يكون `StudentAccount` أو `TeacherAccount` وفق تخصصه، وليس كيانًا يجمع السياقين معًا.
+- **المفتاح الأساسي (PK):** `account_id` (Identifier)
+- **المفاتيح الأجنبية (FK):**
+  - `account_id`: Identifier → يشير إلى `Account.id`, إلزامية, فريدة (UK).
+- **السمات (Attributes):**
+  - `account_id`: Identifier, إلزامية (PK, FK).
+- **القيود المنطقية (Constraints):**
+  - يمثل `StudentAccount` تخصصًا لـ `Account` في سياق الطالب.
+  - لا يجمع `Account` نفسه بين `StudentAccount` و`TeacherAccount`؛ يكون التخصص في أحدهما فقط.
 
 #### 4. `TeacherAccount`
 - **الغرض المفاهيمي:** التخصص الوظيفي للحساب في سياق المعلم.
-- **المفتاح الأساسي (PK):** `account_id`.
-- **المفتاح الأجنبي:** `account_id` → `Account.id`.
-- **العلاقة:** `Account` يمكن أن يكون `StudentAccount` أو `TeacherAccount` وفق تخصصه، وليس كيانًا يجمع السياقين معًا.
+- **المفتاح الأساسي (PK):** `account_id` (Identifier)
+- **المفاتيح الأجنبية (FK):**
+  - `account_id`: Identifier → يشير إلى `Account.id`, إلزامية, فريدة (UK).
+- **السمات (Attributes):**
+  - `account_id`: Identifier, إلزامية (PK, FK).
+- **القيود المنطقية (Constraints):**
+  - يمثل `TeacherAccount` تخصصًا لـ `Account` في سياق المعلم.
+  - لا يجمع `Account` نفسه بين `StudentAccount` و`TeacherAccount`؛ يكون التخصص في أحدهما فقط.
 
 ### النطاق 2: نطاق مساحات العمل (Workspace Domain)
 
@@ -216,24 +235,43 @@
 
 #### 14. `VersionUnit`
 - **الغرض المفاهيمي:** الوحدة التعليمية كما تظهر داخل إصدار محدد من مقرر المكتبة.
-- **PK:** `id`.
-- **FK:** `course_version_id` → `CourseVersion.id`.
-- **Attributes:** `id`, `course_version_id`, `title`, `order_index`.
-- **Constraint:** `UNIQUE(course_version_id, order_index)`.
+- **المفتاح الأساسي (PK):** `id` (Identifier)
+- **المفاتيح الأجنبية (FK):**
+  - `course_version_id`: Identifier → يشير إلى `CourseVersion.id`, إلزامية.
+- **السمات (Attributes):**
+  - `id`: Identifier, إلزامية (PK).
+  - `course_version_id`: Identifier, إلزامية (FK).
+  - `title`: Text, إلزامية.
+  - `order_index`: Integer, إلزامية.
+- **القيود المنطقية (Constraints):**
+  - `UNIQUE(course_version_id, order_index)`: ترتيب فريد للوحدات داخل الإصدار.
 
 #### 15. `VersionLesson`
 - **الغرض المفاهيمي:** الدرس كما يظهر داخل وحدة محددة في إصدار مقرر المكتبة.
-- **PK:** `id`.
-- **FK:** `version_unit_id` → `VersionUnit.id`.
-- **Attributes:** `id`, `version_unit_id`, `title`, `order_index`.
-- **Constraint:** `UNIQUE(version_unit_id, order_index)`.
+- **المفتاح الأساسي (PK):** `id` (Identifier)
+- **المفاتيح الأجنبية (FK):**
+  - `version_unit_id`: Identifier → يشير إلى `VersionUnit.id`, إلزامية.
+- **السمات (Attributes):**
+  - `id`: Identifier, إلزامية (PK).
+  - `version_unit_id`: Identifier, إلزامية (FK).
+  - `title`: Text, إلزامية.
+  - `order_index`: Integer, إلزامية.
+- **القيود المنطقية (Constraints):**
+  - `UNIQUE(version_unit_id, order_index)`: ترتيب فريد للدروس داخل الوحدة.
 
 #### 16. `VersionManifestItem`
 - **الغرض المفاهيمي:** كيان التقاطع الذي يربط درسًا داخل إصدار محدد بأصل محتوى مشترك، دون تكرار عنوان الوحدة أو الدرس أو ترتيبهما.
-- **PK:** `id`.
-- **FK:** `version_lesson_id` → `VersionLesson.id`، `shared_content_id` → `SharedContentItem.id`.
-- **Attributes:** `id`, `version_lesson_id`, `shared_content_id`, `content_type`.
-- **Constraint:** `UNIQUE(version_lesson_id, content_type)`.
+- **المفتاح الأساسي (PK):** `id` (Identifier)
+- **المفاتيح الأجنبية (FK):**
+  - `version_lesson_id`: Identifier → يشير إلى `VersionLesson.id`, إلزامية.
+  - `shared_content_id`: Identifier → يشير إلى `SharedContentItem.id`, إلزامية.
+- **السمات (Attributes):**
+  - `id`: Identifier, إلزامية (PK).
+  - `version_lesson_id`: Identifier, إلزامية (FK).
+  - `shared_content_id`: Identifier, إلزامية (FK).
+  - `content_type`: Enum (`SOURCE`, `OBJECTIVES`, `FLASHCARDS`, `UNDERSTANDING_CARDS`, `LESSON_QUIZ`), إلزامية.
+- **القيود المنطقية (Constraints):**
+  - `UNIQUE(version_lesson_id, content_type)`: لا يمكن وجود أكثر من ملف واحد من نفس النوع داخل الدرس في الإصدار.
 #### 17. `ClassificationTaxonomy`
 - **الغرض المفاهيمي:** عُقد شجرة التصنيف والسياق التعليمي (الدول، الجامعات، التخصصات، المراحل).
 - **المفتاح الأساسي (PK):** `id` (Identifier)
