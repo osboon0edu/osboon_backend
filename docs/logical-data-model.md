@@ -324,8 +324,8 @@
 - **المفتاح الأساسي (PK):** `id` (Identifier)
 - **المفاتيح الأجنبية (FK):**
   - `proposal_id`: Identifier → يشير إلى `UpdateProposal.id`, إلزامية.
-  - `target_version_lesson_id`: Identifier → يشير إلى `VersionLesson.id`, اختيارية؛ تكون مطلوبة منطقيًا في `MODIFY` و`DELETE`.
-  - `source_workspace_lesson_id`: Identifier → يشير إلى `WorkspaceLesson.id`, إلزامية دائمًا؛ تمثل الدرس المحلي الذي أُعدت داخله الإضافة أو التعديل أو الحذف.
+  - `target_version_lesson_id`: Identifier → يشير إلى `VersionLesson.id`, اختيارية.
+  - `source_workspace_lesson_id`: Identifier → يشير إلى `WorkspaceLesson.id`, إلزامية.
 - **السمات (Attributes):**
   - `id`: Identifier, إلزامية (PK).
   - `proposal_id`: Identifier, إلزامية (FK).
