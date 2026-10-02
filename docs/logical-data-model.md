@@ -410,38 +410,51 @@
 
 ## 4. شبكة العلاقات المنطقية وقواعد التكامل المرجعي (Logical Relationships Matrix)
 
-| الكيان المصدر | العلاقة | الكيان الهدف | Cardinality | Optionality |
-|---|---|---|---|---|
-| `Identity` | تملك | `StudentAccount` | `1 : 0..1` | اختيارية |
-| `StudentAccount` | يشير إلى | `Account` | `1 : 1` | إلزامية |
-| `Identity` | تملك | `TeacherAccount` | `1 : 0..1` | اختيارية |
-| `TeacherAccount` | يشير إلى | `Account` | `1 : 1` | إلزامية |
-| `Workspace` | مملوكة لـ | `Account` | `N : 1` | إلزامية |
-| `WorkspaceCourse` | ينتمي لـ | `Workspace` | `N : 1` | إلزامية |
-| `WorkspaceCourseReference` | يحدد ارتباط | `WorkspaceCourse` | `1 : 1` | إلزامية |
-| `WorkspaceCourseReference` | يشير إلى | `LibraryCourse` | `N : 1` | إلزامية |
-| `WorkspaceCourseReference` | يثبت إصدار | `CourseVersion` | `N : 1` | إلزامية |
-| `WorkspaceUnit` | تتبع لـ | `WorkspaceCourse` | `N : 1` | إلزامية |
-| `WorkspaceLesson` | يتبع لـ | `WorkspaceUnit` | `N : 1` | إلزامية |
-| `WorkspaceContentItem` | يستضاف في | `WorkspaceLesson` | `N : 1` | إلزامية |
-| `CourseVersion` | يوثق إصدارًا لـ | `LibraryCourse` | `N : 1` | إلزامية |
-| `LibraryCourse` | يشير إلى أحدث إصدار معتمد | `CourseVersion` | `1 : 0..1` | اختيارية (عبر `current_version_id`) |
-| `VersionUnit` | تتبع لـ | `CourseVersion` | `N : 1` | إلزامية |
-| `VersionLesson` | تتبع لـ | `VersionUnit` | `N : 1` | إلزامية |
-| `VersionManifestItem` | ينتمي لدرس | `VersionLesson` | `N : 1` | إلزامية |
-| `VersionManifestItem` | يربط الأصل | `SharedContentItem` | `N : 1` | إلزامية |
-| `LibraryCourseClassification` | يربط تصنيف | `LibraryCourse` & `ClassificationTaxonomy` | `M : N` | إلزامية |
-| `UpdateProposal` | يرفع من | `WorkspaceCourse` | `N : 1` | إلزامية |
-| `ProposalContentChange` | يتبع لمقترح | `UpdateProposal` | `N : 1` | إلزامية |
-| `ProposalContentChange` | يستهدف درسًا معتمدًا | `VersionLesson` | `N : 0..1` | اختيارية (فقط عند التعديل/الحذف أو الإضافة لدرس قائم) |
-| `ProposalContentChange` | يستند إلى درس مساحة العمل | `WorkspaceLesson` | `N : 1` | إلزامية |
-| `ReviewInvitation` | تخص مقترح | `UpdateProposal` | `N : 1` | إلزامية |
-| `ReviewerAssignment` | تنشأ من | `ReviewInvitation` | `1 : 1` | إلزامية |
-| `CourseAttribution` | يوثق الفضل في | `CourseVersion` | `N : 1` | إلزامية |
+| الكيان المصدر | العلاقة | الكيان الهدف | Cardinality | Optionality | Referential Action |
+|---|---|---|---|---|---|
+| `Identity` | تملك | `StudentAccount` | `1 : 0..1` | اختيارية | Restrict |
+| `StudentAccount` | يشير إلى | `Account` | `1 : 1` | إلزامية | Restrict |
+| `Identity` | تملك | `TeacherAccount` | `1 : 0..1` | اختيارية | Restrict |
+| `TeacherAccount` | يشير إلى | `Account` | `1 : 1` | إلزامية | Restrict |
+| `Workspace` | مملوكة لـ | `Account` | `N : 1` | إلزامية | Restrict على حذف `Account` |
+| `WorkspaceCourse` | ينتمي لـ | `Workspace` | `N : 1` | إلزامية | Cascade عند حذف `Workspace` |
+| `WorkspaceCourseReference` | يحدد ارتباط | `WorkspaceCourse` | `1 : 1` | إلزامية | Cascade عند حذف `WorkspaceCourse` |
+| `WorkspaceCourseReference` | يشير إلى | `LibraryCourse` | `N : 1` | إلزامية | Restrict عند حذف `LibraryCourse` |
+| `WorkspaceCourseReference` | يثبت إصدار | `CourseVersion` | `N : 1` | إلزامية | Restrict عند حذف `CourseVersion` |
+| `WorkspaceUnit` | تتبع لـ | `WorkspaceCourse` | `N : 1` | إلزامية | Cascade عند حذف `WorkspaceCourse` |
+| `WorkspaceLesson` | يتبع لـ | `WorkspaceUnit` | `N : 1` | إلزامية | Cascade عند حذف `WorkspaceUnit` |
+| `WorkspaceContentItem` | يستضاف في | `WorkspaceLesson` | `N : 1` | إلزامية | Cascade عند حذف `WorkspaceLesson` |
+| `CourseVersion` | يوثق إصدارًا لـ | `LibraryCourse` | `N : 1` | إلزامية | Restrict عند حذف `LibraryCourse` |
+| `LibraryCourse` | يشير إلى أحدث إصدار معتمد | `CourseVersion` | `1 : 0..1` | اختيارية (عبر `current_version_id`) | Restrict عند حذف `CourseVersion` |
+| `VersionUnit` | تتبع لـ | `CourseVersion` | `N : 1` | إلزامية | Restrict عند حذف `CourseVersion` |
+| `VersionLesson` | تتبع لـ | `VersionUnit` | `N : 1` | إلزامية | Restrict عند حذف `VersionUnit` |
+| `VersionManifestItem` | ينتمي لدرس | `VersionLesson` | `N : 1` | إلزامية | Restrict عند حذف `VersionLesson` |
+| `VersionManifestItem` | يربط الأصل | `SharedContentItem` | `N : 1` | إلزامية | Restrict عند حذف `SharedContentItem` |
+| `LibraryCourseClassification` | يربط تصنيف | `LibraryCourse` & `ClassificationTaxonomy` | `M : N` | إلزامية | Restrict عند حذف المرجع؛ إزالة الربط فقط |
+| `UpdateProposal` | يرفع من | `WorkspaceCourse` | `N : 1` | إلزامية | Restrict عند حذف `WorkspaceCourse` |
+| `UpdateProposal` | يؤلفه | `Account` | `N : 1` | إلزامية | Restrict عند حذف `Account` |
+| `UpdateProposal` | يستهدف | `LibraryCourse` | `N : 1` | إلزامية | Restrict عند حذف `LibraryCourse` |
+| `ProposalContentChange` | يتبع لمقترح | `UpdateProposal` | `N : 1` | إلزامية | Cascade عند حذف `UpdateProposal` |
+| `ProposalContentChange` | يستهدف درسًا معتمدًا | `VersionLesson` | `N : 0..1` | اختيارية (فقط عند التعديل/الحذف أو الإضافة لدرس قائم) | Restrict عند حذف `VersionLesson` |
+| `ProposalContentChange` | يستند إلى درس مساحة العمل | `WorkspaceLesson` | `N : 1` | إلزامية | Restrict عند حذف `WorkspaceLesson` |
+| `ReviewInvitation` | تخص مقترح | `UpdateProposal` | `N : 1` | إلزامية | Cascade عند حذف `UpdateProposal` |
+| `ReviewInvitation` | تدعو | `Account` | `N : 1` | إلزامية | Restrict عند حذف `Account` |
+| `ReviewerAssignment` | تنشأ من | `ReviewInvitation` | `1 : 1` | إلزامية | Cascade عند حذف `ReviewInvitation` |
+| `ReviewerAssignment` | تسند إلى | `Account` | `N : 1` | إلزامية | Restrict عند حذف `Account` |
+| `CourseAttribution` | يوثق الفضل في | `CourseVersion` | `N : 1` | إلزامية | Restrict عند حذف `CourseVersion` |
+| `CourseAttribution` | ينسب إلى | `Account` | `N : 1` | إلزامية | Restrict عند حذف `Account` |
 
 ---
 
 ## 5. القيود المنطقية للحفاظ على الثوابت (Logical Invariants & Rules)
+### قواعد السلوك عند الحذف (Referential Actions)
+
+- **Cascade:** يُستخدم فقط للعناصر التابعة التي لا تحمل معنى مستقلًا خارج الكيان الأب، مثل بنية ومحتوى مساحة العمل عند حذف `WorkspaceCourse`، وعناصر المقترح عند حذف `UpdateProposal`، ومهمة المراجعة عند حذف الدعوة.
+- **Restrict:** يُستخدم للكيانات المرجعية أو التاريخية أو المرتبطة بحقوق/سجل دائم، مثل `Account`, `LibraryCourse`, `CourseVersion` و`SharedContentItem`؛ يمنع حذف الأصل ما دامت هناك سجلات تعتمد عليه.
+- **LibraryCourse / CourseVersion:** لا يجوز حذف `LibraryCourse` إذا كان له `CourseVersion` أو `WorkspaceCourseReference` أو `UpdateProposal` أو تصنيف مرتبط. ولا يجوز حذف `CourseVersion` إذا كان مرتبطًا بـ`WorkspaceCourseReference` أو `LibraryCourse.current_version_id` أو بنية الإصدار أو إسناد مساهمين/مراجعين.
+- **Account:** لا يُحذف `Account` إذا كان مستخدمًا كمالك أو مؤلف أو مدعو أو مراجع أو مساهم؛ يُستخدم `status = SUSPENDED` بدلًا من حذف الحساب المحتفظ بسجل تاريخي.
+- **Workspace:** حذف `Workspace` يزيل كياناتها التابعة عبر سلسلة `Cascade`، لكن لا يمتد الحذف إلى `Account` أو `LibraryCourse` أو `CourseVersion`.
+- **الهدف من هذه القواعد:** منع فقدان السجل التاريخي أو كسر المراجع، مع السماح بالتطهير الآمن للبيانات التابعة التي لا تستقل دلاليًا عن مالكها.
 
 1. **ثبات الإصدارات المعتمدة:** عند نشر `CourseVersion` تصبح `CourseVersion` و`VersionUnit` و`VersionLesson` و`VersionManifestItem` للقراءة فقط.
 2. **فصل تخزين المحتوى عن البيانات الوصفية:** لا تُخزن محتويات الملفات الفعلية داخل جداول الـmetadata؛ تستخدم الكيانات الملفية `storage_path` إلى `Object Storage` مع `checksum`.
