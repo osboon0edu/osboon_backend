@@ -126,12 +126,14 @@
   - `workspace_course_id`: Identifier, إلزامية (FK, UK).
   - `library_course_id`: Identifier, إلزامية (FK).
   - `pinned_version_id`: Identifier, إلزامية (FK).
-  - `sync_status`: Enum (`UP_TO_DATE`, `UPDATE_AVAILABLE`), إلزامية.
   - `last_synced_at`: Timestamp, إلزامية.
   - `created_at`: Timestamp, إلزامية.
   - `updated_at`: Timestamp, إلزامية.
 - **القيود المنطقية (Constraints):**
   - يجب أن يتبع `pinned_version_id` لنفس `library_course_id`.
+  - `sync_status` ليست سمة مخزنة؛ تُشتق آنيًا بمقارنة `pinned_version_id` مع `LibraryCourse.current_version_id`:
+    - `UP_TO_DATE`: عندما يتطابق الإصداران.
+    - `UPDATE_AVAILABLE`: عندما يختلف الإصداران.
 
 ### النطاق 3: نطاق البنية التعليمية (Learning Structure Domain)
 
@@ -430,7 +432,7 @@
 1. **ثبات الإصدارات المعتمدة:** عند نشر `CourseVersion` تصبح `CourseVersion` و`VersionUnit` و`VersionLesson` و`VersionManifestItem` للقراءة فقط.
 2. **فصل تخزين المحتوى عن البيانات الوصفية:** لا تُخزن محتويات الملفات الفعلية داخل جداول الـmetadata؛ تستخدم الكيانات الملفية `storage_path` إلى `Object Storage` مع `checksum`.
 3. **انفصال النسخة الخاصة:** `WorkspaceContentItem` الخاص يستخدم `storage_path` لمحتواه المستقل، بينما المرجع المشترك يعتمد على `SharedContentItem.storage_path` ولا يستنسخ المسار أو الملف محليًا.
-4. **صحة ارتباط الإصدار المثبت:** `pinned_version_id` يجب أن يتبع نفس `library_course_id`.
+4. **صحة ارتباط الإصدار المثبت وحالة المزامنة:** `pinned_version_id` يجب أن يتبع نفس `library_course_id`، و`sync_status` قيمة مشتقة آنيًا من مقارنة `pinned_version_id` مع `LibraryCourse.current_version_id` ولا تُخزن في `WorkspaceCourseReference`.
 5. **سلامة موضع التغيير المقترح:** `source_workspace_lesson_id` إلزامي لكل `ProposalContentChange`، بينما `target_version_lesson_id` يكون مطلوبًا في `MODIFY` و`DELETE`، ويكون `NULL` في `ADD` لدرس جديد.
 6. **تجميد المحتوى المقترح أثناء المراجعة:** بعد `SUBMITTED` أو `UNDER_REVIEW` لا تُعدل سجلات `ProposalContentChange`.
 7. **استقلال مقرر مساحة العمل عن مقرر المكتبة:** التعديل أو الحذف في `WorkspaceCourse` لا يغير `LibraryCourse` المقابل.
