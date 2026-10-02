@@ -60,6 +60,7 @@
   - لا يخزن `Account` مرجع `Identity` مباشرة.
   - يحدد `StudentAccount` أو `TeacherAccount` السياق التعليمي للحساب ويربطه بالـ`Identity` المالكة.
   - يمكن للـ`Identity` نفسها امتلاك `StudentAccount` و`TeacherAccount` معًا، ولكل سياق `Account` مستقل.
+  - **قيد التبعية الإلزامية:** كل سجل `Account` يجب أن يرتبط حتمًا بكيان `StudentAccount` واحد أو `TeacherAccount` واحد، ويُحظر وجود حساب عام لا يرتبط بهوية عبر أحد هذين السياقين.
 
 #### 3. `StudentAccount`
 - **الغرض المفاهيمي:** الحساب المتخصص في سياق الطالب والمملوك للـ `Identity` عبر حساب `Account` مستقل.
@@ -421,6 +422,7 @@
 | `WorkspaceLesson` | يتبع لـ | `WorkspaceUnit` | `N : 1` | إلزامية |
 | `WorkspaceContentItem` | يستضاف في | `WorkspaceLesson` | `N : 1` | إلزامية |
 | `CourseVersion` | يوثق إصدارًا لـ | `LibraryCourse` | `N : 1` | إلزامية |
+| `LibraryCourse` | يشير إلى أحدث إصدار معتمد | `CourseVersion` | `1 : 0..1` | اختيارية (عبر `current_version_id`) |
 | `VersionUnit` | تتبع لـ | `CourseVersion` | `N : 1` | إلزامية |
 | `VersionLesson` | تتبع لـ | `VersionUnit` | `N : 1` | إلزامية |
 | `VersionManifestItem` | ينتمي لدرس | `VersionLesson` | `N : 1` | إلزامية |
@@ -428,6 +430,8 @@
 | `LibraryCourseClassification` | يربط تصنيف | `LibraryCourse` & `ClassificationTaxonomy` | `M : N` | إلزامية |
 | `UpdateProposal` | يرفع من | `WorkspaceCourse` | `N : 1` | إلزامية |
 | `ProposalContentChange` | يتبع لمقترح | `UpdateProposal` | `N : 1` | إلزامية |
+| `ProposalContentChange` | يستهدف درسًا معتمدًا | `VersionLesson` | `N : 0..1` | اختيارية (فقط عند التعديل/الحذف أو الإضافة لدرس قائم) |
+| `ProposalContentChange` | يستند إلى درس مساحة العمل | `WorkspaceLesson` | `N : 1` | إلزامية |
 | `ReviewInvitation` | تخص مقترح | `UpdateProposal` | `N : 1` | إلزامية |
 | `ReviewerAssignment` | تنشأ من | `ReviewInvitation` | `1 : 1` | إلزامية |
 | `CourseAttribution` | يوثق الفضل في | `CourseVersion` | `N : 1` | إلزامية |
