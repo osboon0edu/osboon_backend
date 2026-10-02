@@ -24,13 +24,12 @@
 ### النقطة الثانية: نمذجة إصدارات الملفات والمانيفست (File-Manifest / Version-Content Linkage)
 - **القرار المنطقي:** تطبيق مبدأ **إدارة الإصدارات على مستوى الملفات المتغيرة (File-level Versioning)** عبر الفصل بين المستودع المشترك للملفات وبيان الإصدار (Manifest):
   1. `SharedContentItem`: يمثل المحتوى الفعلي للأصل التعليمي المعتمد والمملوك للمكتبة العامة (`Library Ownership`). هذا الكيان غير قابل للتعديل نهائيًا (`Immutable`) ومحايد تجاه رقم الإصدار.
-  2. `VersionUnit`, `VersionLesson`, `VersionManifestItem`: تمثل البنية الهيكلية للإصدار وبيان محتواه، بحيث يشير كل `VersionManifestItem` إلى `VersionLesson` وإلى `SharedContentItem` بحسب `content_type`، دون تكرار عنوان الوحدة أو الدرس أو ترتيب كل ملف داخل المانيفست.
+  2. `VersionUnit`, `VersionLesson`, `VersionManifestItem`: تمثل البنية الهيكلية للإصدار وبيان محتواه، بحيث يشير كل `VersionManifestItem` إلى `VersionLesson` وإلى `SharedContentItem`، مع السماح بأكثر من ملف من النوع نفسه داخل الدرس، والتمييز بين الملفات عبر `title`.
 - **التبرير:** يضمن عدم استنساخ الملفات غير المتغيرة عبر الإصدارات؛ فالإصدار `v1.1` يشير إلى نفس سجلات `SharedContentItem` الخاصة بـ `v1.0` للملفات الثابتة، بينما يسجل فقط إشارات جديدة للملفات المتغيرة (`Changed Content`).
 
 ### النقطة الثالثة: نمذجة الأنواع الخمسة للمحتوى التعليمي (Educational Content Typing)
-- **القرار المنطقي:** اعتماد نمط **الكيان الموحد متعدد الأنواع (Single Logical Content Entity with Discriminator)**.
-- **التبرير:** تشترك ملفات المحتوى الخمسة (`Source`, `Objectives`, `Flashcards`, `Understanding Cards`, `Lesson Quiz/Test`) في نفس دورة الحياة، وطرق التعديل، والمزامنة، والاستضافة داخل الدرس، والاشتقاق للنسخ الخاصة (`Private Copy`). يتم التمييز بينها منطقيًا عبر سمة تمييزية (`content_type`) مع إلزام الدرس باستضافة ملف واحد كحد أقصى من كل نوع عبر قيد فريد مركب:
-  `UNIQUE(lesson_id, content_type)`.
+- **القرار المنطقي:** اعتماد نمط **الكيان الموحد متعدد الأنواع (Single Logical Content Entity with Discriminator)** مع السماح بتعدد الملفات من النوع نفسه داخل الدرس.
+- **التبرير:** تشترك ملفات المحتوى الخمسة (`Source`, `Objectives`, `Flashcards`, `Understanding Cards`, `Lesson Quiz/Test`) في نفس دورة الحياة وطرق التعديل والمزامنة والاستضافة داخل الدرس، مع التمييز بينها عبر `content_type`، بينما يميز `title` بين الملفات المتعددة من النوع نفسه. لا يُفرض قيد فريد على `content_type` وحده داخل الدرس.
 
 ---
 
@@ -63,26 +62,32 @@
   - كل `Account` يتبع `Identity` واحدة فقط.
 
 #### 3. `StudentAccount`
-- **الغرض المفاهيمي:** التخصص الوظيفي للحساب في سياق الطالب.
-- **المفتاح الأساسي (PK):** `account_id` (Identifier)
+- **الغرض المفاهيمي:** الحساب المتخصص في سياق الطالب والمملوك للـ `Identity` عبر حساب `Account` مستقل.
+- **المفتاح الأساسي (PK):** `identity_id` (Identifier)
 - **المفاتيح الأجنبية (FK):**
+  - `identity_id`: Identifier → يشير إلى `Identity.id`, إلزامية.
   - `account_id`: Identifier → يشير إلى `Account.id`, إلزامية, فريدة (UK).
 - **السمات (Attributes):**
-  - `account_id`: Identifier, إلزامية (PK, FK).
+  - `identity_id`: Identifier, إلزامية (PK, FK).
+  - `account_id`: Identifier, إلزامية (FK, UK).
 - **القيود المنطقية (Constraints):**
-  - يمثل `StudentAccount` تخصصًا لـ `Account` في سياق الطالب.
-  - لا يجمع `Account` نفسه بين `StudentAccount` و`TeacherAccount`؛ يكون التخصص في أحدهما فقط.
+  - يمكن للـ `Identity` امتلاك `StudentAccount` واحد فقط.
+  - يجب أن يشير `account_id` إلى `Account` مملوك لنفس `Identity`.
+  - `StudentAccount` و`TeacherAccount` سياقان مستقلان، ويمكن للـ `Identity` نفسها امتلاكهما معًا.
 
 #### 4. `TeacherAccount`
-- **الغرض المفاهيمي:** التخصص الوظيفي للحساب في سياق المعلم.
-- **المفتاح الأساسي (PK):** `account_id` (Identifier)
+- **الغرض المفاهيمي:** الحساب المتخصص في سياق المعلم والمملوك للـ `Identity` عبر حساب `Account` مستقل.
+- **المفتاح الأساسي (PK):** `identity_id` (Identifier)
 - **المفاتيح الأجنبية (FK):**
+  - `identity_id`: Identifier → يشير إلى `Identity.id`, إلزامية.
   - `account_id`: Identifier → يشير إلى `Account.id`, إلزامية, فريدة (UK).
 - **السمات (Attributes):**
-  - `account_id`: Identifier, إلزامية (PK, FK).
+  - `identity_id`: Identifier, إلزامية (PK, FK).
+  - `account_id`: Identifier, إلزامية (FK, UK).
 - **القيود المنطقية (Constraints):**
-  - يمثل `TeacherAccount` تخصصًا لـ `Account` في سياق المعلم.
-  - لا يجمع `Account` نفسه بين `StudentAccount` و`TeacherAccount`؛ يكون التخصص في أحدهما فقط.
+  - يمكن للـ `Identity` امتلاك `TeacherAccount` واحد فقط.
+  - يجب أن يشير `account_id` إلى `Account` مملوك لنفس `Identity`.
+  - `StudentAccount` و`TeacherAccount` سياقان مستقلان، ويمكن للـ `Identity` نفسها امتلاكهما معًا.
 
 ### النطاق 2: نطاق مساحات العمل (Workspace Domain)
 
@@ -170,26 +175,24 @@
 ### النطاق 4: نطاق المحتوى التعليمي (Educational Content Domain)
 
 #### 10. `WorkspaceContentItem`
-- **الغرض المفاهيمي:** ملف المحتوى التعليمي المستضاف داخل الدرس؛ إما مرجع لمحتوى مشترك أو نسخة خاصة معدلة (`Private Copy`).
+- **الغرض المفاهيمي:** ملف محتوى تعليمي محلي داخل `Workspace`؛ يُستخدم للمقررات المنشأة محليًا أو لحفظ التعديلات الخاصة المستقلة (`Local Override / Private Copy`) التي أنشأها المستخدم ويريد مزامنتها سحابيًا.
 - **المفتاح الأساسي (PK):** `id` (Identifier)
 - **المفاتيح الأجنبية (FK):**
   - `lesson_id`: Identifier → يشير إلى `WorkspaceLesson.id`, إلزامية.
-  - `shared_content_id`: Identifier → يشير إلى `SharedContentItem.id`, اختيارية (NULL للملفات المحلية الخالصة).
 - **السمات (Attributes):**
   - `id`: Identifier, إلزامية (PK).
   - `lesson_id`: Identifier, إلزامية (FK).
-  - `shared_content_id`: Identifier, اختيارية (FK).
+  - `title`: Text, إلزامية.
   - `content_type`: Enum (`SOURCE`, `OBJECTIVES`, `FLASHCARDS`, `UNDERSTANDING_CARDS`, `LESSON_QUIZ`), إلزامية.
   - `file_format`: Enum (`MARKDOWN`, `JSON`), إلزامية.
-  - `is_private_copy`: Boolean, إلزامية (افتراضيًا `FALSE` للمراجع المشتركة).
-  - `storage_path`: String, اختيارية؛ تكون فارغة عند الاعتماد على `SharedContentItem.storage_path`، وتصبح إلزامية عند وجود نسخة خاصة مستقلة.
+  - `storage_path`: String, إلزامية؛ يشير إلى الملف المحلي المستقل في `Object Storage`.
   - `checksum`: String, إلزامية.
   - `created_at`: Timestamp, إلزامية.
   - `updated_at`: Timestamp, إلزامية.
 - **القيود المنطقية (Constraints):**
-  - `UNIQUE(lesson_id, content_type)`: لا يمكن وجود أكثر من ملف واحد من نفس النوع داخل الدرس.
-  - `CHECK (is_private_copy = FALSE IMPLIES (shared_content_id IS NOT NULL AND storage_path IS NULL))`: إذا لم يكن الملف نسخة خاصة، يعتمد على `SharedContentItem` ولا يخزن مسارًا محليًا.
-  - `CHECK (is_private_copy = TRUE IMPLIES storage_path IS NOT NULL)`: إذا كان نسخة خاصة، يجب أن يملك مسار تخزين مستقلًا.
+  - يمكن أن يحتوي الدرس على أكثر من ملف من النوع نفسه.
+  - `title` يميز الملفات المتعددة من النوع نفسه داخل الدرس.
+  - لا يمثل هذا الكيان مرجعًا مباشرًا إلى `SharedContentItem`; قراءة المحتوى المشترك للمقرر المرتبط بالمكتبة تتم مرجعيًا عبر `WorkspaceCourseReference` و`CourseVersion`.
 
 ### النطاق 5: نطاق المكتبة العامة وإدارة الإصدارات (Public Library & Versioning Domain)
 
@@ -262,7 +265,7 @@
   - `UNIQUE(version_unit_id, order_index)`: ترتيب فريد للدروس داخل الوحدة.
 
 #### 16. `VersionManifestItem`
-- **الغرض المفاهيمي:** كيان التقاطع الذي يربط درسًا داخل إصدار محدد بأصل محتوى مشترك، دون تكرار عنوان الوحدة أو الدرس أو ترتيبهما.
+- **الغرض المفاهيمي:** كيان التقاطع الذي يربط درسًا داخل إصدار محدد بأصل محتوى مشترك، مع السماح بأكثر من ملف من النوع نفسه داخل الدرس.
 - **المفتاح الأساسي (PK):** `id` (Identifier)
 - **المفاتيح الأجنبية (FK):**
   - `version_lesson_id`: Identifier → يشير إلى `VersionLesson.id`, إلزامية.
@@ -271,9 +274,11 @@
   - `id`: Identifier, إلزامية (PK).
   - `version_lesson_id`: Identifier, إلزامية (FK).
   - `shared_content_id`: Identifier, إلزامية (FK).
+  - `title`: Text, إلزامية.
   - `content_type`: Enum (`SOURCE`, `OBJECTIVES`, `FLASHCARDS`, `UNDERSTANDING_CARDS`, `LESSON_QUIZ`), إلزامية.
 - **القيود المنطقية (Constraints):**
-  - `UNIQUE(version_lesson_id, content_type)`: لا يمكن وجود أكثر من ملف واحد من نفس النوع داخل الدرس في الإصدار.
+  - يمكن أن يحتوي `VersionLesson` على أكثر من `VersionManifestItem` من النوع نفسه.
+  - `title` يميز الملفات المتعددة من النوع نفسه داخل الدرس.
 #### 17. `ClassificationTaxonomy`
 - **الغرض المفاهيمي:** عُقد شجرة التصنيف والسياق التعليمي (الدول، الجامعات، التخصصات، المراحل).
 - **المفتاح الأساسي (PK):** `id` (Identifier)
@@ -340,7 +345,8 @@
   - `proposed_checksum`: String, إلزامية.
   - `created_at`: Timestamp, إلزامية.
 - **القيود المنطقية (Constraints):**
-  - `ADD`: يجب أن يكون `target_version_lesson_id = NULL`، ويستمد النظام عنوان الدرس وترتيبه من `source_workspace_lesson_id`.
+  - `ADD` لملف يتبع درسًا قائمًا: يجب أن يكون `target_version_lesson_id IS NOT NULL` للإشارة إلى الدرس القائم.
+  - `ADD` لملف يتبع درسًا جديدًا: يجب أن يكون `target_version_lesson_id = NULL`، ويستمد النظام عنوان الدرس وترتيبه من `source_workspace_lesson_id`.
   - `MODIFY` و`DELETE`: يجب أن يكون `target_version_lesson_id IS NOT NULL` للإشارة الصريحة إلى الدرس القائم في الإصدار المستهدف.
   - لا تُستخدم العناوين النصية (`unit_title`, `lesson_title`) كمرجع هيكلي للموقع.
 
@@ -402,8 +408,10 @@
 | الكيان المصدر | العلاقة | الكيان الهدف | Cardinality | Optionality |
 |---|---|---|---|---|
 | `Account` | يتبع لـ | `Identity` | `N : 1` | إلزامية |
-| `StudentAccount` | يخص | `Account` | `1 : 1` | إلزامية من جهة الملف |
-| `TeacherAccount` | يخص | `Account` | `1 : 1` | إلزامية من جهة الملف |
+| `Identity` | تملك | `StudentAccount` | `1 : 0..1` | اختيارية |
+| `StudentAccount` | يشير إلى | `Account` | `1 : 1` | إلزامية |
+| `Identity` | تملك | `TeacherAccount` | `1 : 0..1` | اختيارية |
+| `TeacherAccount` | يشير إلى | `Account` | `1 : 1` | إلزامية |
 | `Workspace` | مملوكة لـ | `Account` | `N : 1` | إلزامية |
 | `WorkspaceCourse` | ينتمي لـ | `Workspace` | `N : 1` | إلزامية |
 | `WorkspaceCourseReference` | يحدد ارتباط | `WorkspaceCourse` | `1 : 1` | إلزامية |
@@ -412,7 +420,6 @@
 | `WorkspaceUnit` | تتبع لـ | `WorkspaceCourse` | `N : 1` | إلزامية |
 | `WorkspaceLesson` | يتبع لـ | `WorkspaceUnit` | `N : 1` | إلزامية |
 | `WorkspaceContentItem` | يستضاف في | `WorkspaceLesson` | `N : 1` | إلزامية |
-| `WorkspaceContentItem` | يشير إلى | `SharedContentItem` | `N : 0..1` | اختيارية |
 | `CourseVersion` | يوثق إصدارًا لـ | `LibraryCourse` | `N : 1` | إلزامية |
 | `VersionUnit` | تتبع لـ | `CourseVersion` | `N : 1` | إلزامية |
 | `VersionLesson` | تتبع لـ | `VersionUnit` | `N : 1` | إلزامية |
@@ -431,9 +438,9 @@
 
 1. **ثبات الإصدارات المعتمدة:** عند نشر `CourseVersion` تصبح `CourseVersion` و`VersionUnit` و`VersionLesson` و`VersionManifestItem` للقراءة فقط.
 2. **فصل تخزين المحتوى عن البيانات الوصفية:** لا تُخزن محتويات الملفات الفعلية داخل جداول الـmetadata؛ تستخدم الكيانات الملفية `storage_path` إلى `Object Storage` مع `checksum`.
-3. **انفصال النسخة الخاصة:** `WorkspaceContentItem` الخاص يستخدم `storage_path` لمحتواه المستقل، بينما المرجع المشترك يعتمد على `SharedContentItem.storage_path` ولا يستنسخ المسار أو الملف محليًا.
+3. **القراءة المرجعية والنسخ عند التعديل:** المقرر المرتبط بالمكتبة يُقرأ مرجعيًا عبر `WorkspaceCourseReference` و`CourseVersion`، ولا يُنشأ `WorkspaceContentItem` لهذه الملفات المشتركة. يُستخدم `WorkspaceContentItem` للمحتوى المحلي أو للنسخ الخاصة والتعديلات المحلية المستقلة، ويكون `storage_path` إلزاميًا.
 4. **صحة ارتباط الإصدار المثبت وحالة المزامنة:** `pinned_version_id` يجب أن يتبع نفس `library_course_id`، و`sync_status` قيمة مشتقة آنيًا من مقارنة `pinned_version_id` مع `LibraryCourse.current_version_id` ولا تُخزن في `WorkspaceCourseReference`.
-5. **سلامة موضع التغيير المقترح:** `source_workspace_lesson_id` إلزامي لكل `ProposalContentChange`، بينما `target_version_lesson_id` يكون مطلوبًا في `MODIFY` و`DELETE`، ويكون `NULL` في `ADD` لدرس جديد.
+5. **سلامة موضع التغيير المقترح:** `source_workspace_lesson_id` إلزامي لكل `ProposalContentChange`. في `MODIFY` و`DELETE` يكون `target_version_lesson_id` مطلوبًا، وفي `ADD` يكون مطلوبًا عند إضافة ملف إلى درس قائم، ويكون `NULL` فقط عند إضافة ملف يتبع درسًا جديدًا.
 6. **تجميد المحتوى المقترح أثناء المراجعة:** بعد `SUBMITTED` أو `UNDER_REVIEW` لا تُعدل سجلات `ProposalContentChange`.
 7. **استقلال مقرر مساحة العمل عن مقرر المكتبة:** التعديل أو الحذف في `WorkspaceCourse` لا يغير `LibraryCourse` المقابل.
 
@@ -444,8 +451,8 @@
 | المتطلب من المراحل السابقة | كيفية تحقيقه في النموذج المنطقي (Logical Data Model) |
 |---|---|
 | فصل الهوية عن الحسابات (Phase 2 & 3) | تمثيل منفصل لـ `Identity` و `Account`، مع السماح للهوية بامتلاك أكثر من حساب، وتخصص الحساب في `StudentAccount` أو `TeacherAccount`. |
-| استقلال بيئة مساحة العمل وعدم الاستنساخ التلقائي (Phase 3 & 4) | كيان `WorkspaceCourseReference` يشير فقط للإصدار المثبت (`Pinned Version`) دون نسخ البيانات. |
-| فصل الهيكل عن المحتوى (Phase 2 & 5) | `WorkspaceLesson` تمثل الحاوية، و `WorkspaceContentItem` يمثل ملف المحتوى بنوعه المخصص. |
+| استقلال بيئة مساحة العمل وعدم الاستنساخ التلقائي (Phase 3 & 4) | كيان `WorkspaceCourseReference` يشير فقط للإصدار المثبت (`Pinned Version`) دون نسخ الملفات المشتركة، ويُستخدم `WorkspaceContentItem` فقط للمحتوى المحلي والنسخ الخاصة الناتجة عن التعديل. |
+| فصل الهيكل عن المحتوى (Phase 2 & 5) | `WorkspaceLesson` تمثل الحاوية، و `WorkspaceContentItem` يمثل ملف المحتوى بعنوانه ونوعه ومساره المستقل. |
 | إدارة الإصدارات على مستوى الملفات المتغيرة (Phase 2 & 6) | الفصل بين `SharedContentItem` وبنية الإصدار عبر `VersionUnit` و`VersionLesson` والربط عبر `VersionManifestItem` دون تكرار العناوين والترتيب. |
 | حسم تصنيف وسياق النشر (Phase 6 Deferred Point) | نمذجة `ClassificationTaxonomy` كشجرة متعددة الأبعاد وربطها بـ `LibraryCourseClassification`. |
 | استيعاب مسار المراجعة والاعتماد والمساهمين (Phase 4 & 5) | كيانات كاملة للمقترح (`UpdateProposal`)، الدعوات (`ReviewInvitation`)، المهام (`ReviewerAssignment`)، وحفظ الحقوق (`CourseAttribution`). |
@@ -454,6 +461,6 @@
 
 ## 7. الخلاصة والخطوة التالية
 
-يغطي هذا النموذج المنطقي الكيانات والعلاقات والمحددات المفاهيمية المتفق عليها، ويفصل أدوار الحسابات، ويطبع بنية الإصدارات، ويفصل تخزين المحتوى الفعلي عن بياناته الوصفية.
+يغطي هذا النموذج المنطقي الكيانات والعلاقات والمحددات المفاهيمية المتفق عليها، ويفصل سياقات الحسابات، ويطبع بنية الإصدارات، ويفصل القراءة المرجعية للمحتوى المشترك عن المحتوى المحلي والنسخ الخاصة، ويفصل تخزين المحتوى الفعلي عن بياناته الوصفية.
 
 بهذا تكتمل متطلبات **Phase 7 — Logical Data Model**، وتصبح هذه الوثيقة المرجع الأساسي المعتمد للانتقال إلى المرحلة التالية: **نموذج الوصول وأمن البيانات (Phase 8 — Data Access & Security Model)**.
