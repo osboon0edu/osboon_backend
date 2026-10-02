@@ -46,20 +46,20 @@
   - `created_at`: Timestamp, إلزامية.
 
 #### 2. `Account`
-- **الغرض المفاهيمي:** الحساب الوظيفي المملوك لـ `Identity` ويمثل سياقًا تعليميًا محددًا.
+- **الغرض المفاهيمي:** الحساب الوظيفي الأساسي الذي يمثل الحاوية العامة للحساب، دون تحديد سياق الطالب أو المعلم داخله.
 - **المفتاح الأساسي (PK):** `id` (Identifier)
 - **المفاتيح الأجنبية (FK):**
-  - `identity_id`: Identifier → يشير إلى `Identity.id`, إلزامية.
+  - لا توجد مفاتيح أجنبية مباشرة.
 - **السمات (Attributes):**
   - `id`: Identifier, إلزامية (PK).
-  - `identity_id`: Identifier, إلزامية (FK).
   - `display_name`: Text, إلزامية.
   - `status`: String, إلزامية.
   - `created_at`: Timestamp, إلزامية.
   - `updated_at`: Timestamp, إلزامية.
 - **القيود المنطقية (Constraints):**
-  - يمكن لـ `Identity` واحدة امتلاك أكثر من `Account`.
-  - كل `Account` يتبع `Identity` واحدة فقط.
+  - لا يخزن `Account` مرجع `Identity` مباشرة.
+  - يحدد `StudentAccount` أو `TeacherAccount` السياق التعليمي للحساب ويربطه بالـ`Identity` المالكة.
+  - يمكن للـ`Identity` نفسها امتلاك `StudentAccount` و`TeacherAccount` معًا، ولكل سياق `Account` مستقل.
 
 #### 3. `StudentAccount`
 - **الغرض المفاهيمي:** الحساب المتخصص في سياق الطالب والمملوك للـ `Identity` عبر حساب `Account` مستقل.
@@ -407,7 +407,6 @@
 
 | الكيان المصدر | العلاقة | الكيان الهدف | Cardinality | Optionality |
 |---|---|---|---|---|
-| `Account` | يتبع لـ | `Identity` | `N : 1` | إلزامية |
 | `Identity` | تملك | `StudentAccount` | `1 : 0..1` | اختيارية |
 | `StudentAccount` | يشير إلى | `Account` | `1 : 1` | إلزامية |
 | `Identity` | تملك | `TeacherAccount` | `1 : 0..1` | اختيارية |
