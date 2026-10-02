@@ -37,7 +37,7 @@ Identity
 
 ## 3. Workspace
 
-**Workspace** هي الحاوية التنظيمية التي يعيش داخلها عمل Account وCourses الخاصة به.
+**Workspace** هي الحاوية التنظيمية التي يعيش داخلها عمل Account وCourses الخاصة به. يبدأ استخدامها ضمن معمارية **Local-First** على جهاز المستخدم، ويمكن مزامنة بياناتها الخاصة سحابيًا عند اختيار Cloud Sync.
 
 - كل Workspace تنتمي إلى Account واحد.
 - يمكن لـAccount الواحد امتلاك عدة Workspaces.
@@ -151,7 +151,7 @@ Educational Content منفصل مفاهيميًا عن Learning Structure.
 
 ### Shared Content
 
-**Shared Content** هو المحتوى الذي تديره Public Library ويمكن أن تشير إليه عدة Workspaces بدل إنشاء نسخة كاملة منه لكل مستخدم.
+**Shared Content** هو المحتوى الذي تديره Public Library ويمكن أن تشير إليه عدة Workspaces بدل إنشاء نسخة كاملة منه لكل مستخدم. يُقرأ هذا المحتوى مرجعيًا من الإصدار المثبت، ولا يلزم تكراره في قاعدة البيانات السحابية لمساحة العمل.
 
 ### Workspace Course Reference
 
@@ -165,11 +165,11 @@ Educational Content منفصل مفاهيميًا عن Learning Structure.
 
 ### Private Modification
 
-**Private Modification** هو تعديل يجريه المستخدم على محتوى مرتبط بـPublic Library داخل Workspace، ويصبح هذا التعديل خاصًا بالمستخدم إلى أن يقرر نشره كتحديث.
+**Private Modification** هو تعديل يجريه المستخدم محليًا على محتوى مرتبط بـPublic Library داخل Workspace، ويصبح هذا التعديل خاصًا بالمستخدم، ويمكن مزامنته سحابيًا اختياريًا، إلى أن يقرر نشره كتحديث.
 
 ### Private Copy
 
-**Private Copy** هي نسخة خاصة من ملف تم تعديله داخل Workspace، ويمكن للمستخدم تعديلها أو حذفها دون إنشاء Course Version في Public Library.
+**Private Copy** هي نسخة خاصة محلية من ملف تم تعديله داخل Workspace، ويمكن للمستخدم تعديلها أو حذفها، ويمكن مزامنتها سحابيًا اختياريًا، دون إنشاء Course Version في Public Library.
 
 ### Publish
 
@@ -237,7 +237,7 @@ Educational Content منفصل مفاهيميًا عن Learning Structure.
 
 ### Library Ownership
 
-**Library Ownership** تعني انتقال ملكية الملفات المشتركة الخاصة بـCourse إلى Public Library بعد اعتماد نشره.
+**Library Ownership** تعني انتقال ملكية الملفات المشتركة الخاصة بـCourse إلى Public Library بعد اعتماد نشره، مع تطهير سجلات البنية والمحتوى الخاصة المتزامنة سحابيًا للمقرر واستبدالها بارتباط `WorkspaceCourseReference` بالإصدار المعتمد.
 
 ### File-level Versioning
 
