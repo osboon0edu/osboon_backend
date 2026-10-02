@@ -191,8 +191,7 @@
   - `title`: Text, إلزامية.
   - `content_type`: Enum (`SOURCE`, `OBJECTIVES`, `FLASHCARDS`, `UNDERSTANDING_CARDS`, `LESSON_QUIZ`), إلزامية.
   - `file_format`: Enum (`MARKDOWN`, `JSON`), إلزامية.
-  - `is_private_copy`: Boolean, إلزامية (افتراضيًا `FALSE`).
-  - `storage_path`: String, اختيارية؛ تصبح إلزامية عندما تكون `is_private_copy = TRUE`.
+  - `storage_path`: String, إلزامية، يشير إلى المحتوى الفعلي في `Object Storage`.
   - `checksum`: String, إلزامية.
   - `created_at`: Timestamp, إلزامية.
   - `updated_at`: Timestamp, إلزامية.
@@ -200,8 +199,6 @@
   - يجب أن يكون أحد المرجعين فقط موجودًا: `workspace_lesson_id` أو `version_lesson_id`، ولا يجوز اجتماعهما أو خلوهما معًا.
   - `workspace_lesson_id` يستخدم فقط عندما يكون `WorkspaceCourse.origin_type = LOCAL_AUTHOR`.
   - `version_lesson_id` يستخدم فقط عندما يكون `WorkspaceCourse.origin_type = LIBRARY_REFERENCE`.
-  - `is_private_copy = FALSE` يعني أن الملف ليس تجاوزًا خاصًا؛ عندها يجب أن يكون `storage_path = NULL`، ويُقرأ المحتوى الأصلي من `VersionManifestItem` و`SharedContentItem`.
-  - `is_private_copy = TRUE` يعني أن الملف نسخة خاصة مستقلة؛ عندها يجب أن يكون `storage_path IS NOT NULL`.
   - للمحتوى المحلي: `UNIQUE(workspace_lesson_id, content_type, title)`.
   - للتجاوز المرجعي: `UNIQUE(version_lesson_id, content_type, title)`.
   - **حظر الاستنساخ الهيكلي:** المقرر من نوع `LIBRARY_REFERENCE` لا ينشئ سجلات `WorkspaceUnit` أو `WorkspaceLesson` للمحتوى المرجعي؛ البنية تقرأ من `VersionUnit` و`VersionLesson`.
