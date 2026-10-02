@@ -433,7 +433,7 @@
 | `LibraryCourseClassification` | يربط تصنيف | `LibraryCourse` & `ClassificationTaxonomy` | `M : N` | إلزامية | Restrict عند حذف المرجع؛ إزالة الربط فقط |
 | `UpdateProposal` | يرفع من | `WorkspaceCourse` | `N : 1` | إلزامية | Restrict عند حذف `WorkspaceCourse` |
 | `UpdateProposal` | يؤلفه | `Account` | `N : 1` | إلزامية | Restrict عند حذف `Account` |
-| `UpdateProposal` | يستهدف | `LibraryCourse` | `N : 1` | إلزامية | Restrict عند حذف `LibraryCourse` |
+| `UpdateProposal` | يستهدف | `LibraryCourse` | `N : 0..1` | اختيارية (NULL في النشر الأولي) | Restrict عند حذف `LibraryCourse` |
 | `ProposalContentChange` | يتبع لمقترح | `UpdateProposal` | `N : 1` | إلزامية | Cascade عند حذف `UpdateProposal` |
 | `ProposalContentChange` | يستهدف درسًا معتمدًا | `VersionLesson` | `N : 0..1` | اختيارية (فقط عند التعديل/الحذف أو الإضافة لدرس قائم) | Restrict عند حذف `VersionLesson` |
 | `ProposalContentChange` | يستند إلى درس مساحة العمل | `WorkspaceLesson` | `N : 1` | إلزامية | Restrict عند حذف `WorkspaceLesson` |
