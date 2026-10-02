@@ -278,7 +278,7 @@
   - `content_type`: Enum (`SOURCE`, `OBJECTIVES`, `FLASHCARDS`, `UNDERSTANDING_CARDS`, `LESSON_QUIZ`), إلزامية.
 - **القيود المنطقية (Constraints):**
   - يمكن أن يحتوي `VersionLesson` على أكثر من `VersionManifestItem` من النوع نفسه.
-  - `title` يميز الملفات المتعددة من النوع نفسه داخل الدرس.
+  - `UNIQUE(version_lesson_id, content_type, title)`: لا يمكن تكرار ملف بنفس العنوان والنوع داخل الدرس في الإصدار الواحد.
 #### 17. `ClassificationTaxonomy`
 - **الغرض المفاهيمي:** عُقد شجرة التصنيف والسياق التعليمي (الدول، الجامعات، التخصصات، المراحل).
 - **المفتاح الأساسي (PK):** `id` (Identifier)
