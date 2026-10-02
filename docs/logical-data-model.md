@@ -53,7 +53,7 @@
 - **السمات (Attributes):**
   - `id`: Identifier, إلزامية (PK).
   - `display_name`: Text, إلزامية.
-  - `status`: String, إلزامية.
+  - `status`: Enum (`ACTIVE`, `SUSPENDED`), إلزامية.
   - `created_at`: Timestamp, إلزامية.
   - `updated_at`: Timestamp, إلزامية.
 - **القيود المنطقية (Constraints):**
@@ -191,7 +191,7 @@
   - `updated_at`: Timestamp, إلزامية.
 - **القيود المنطقية (Constraints):**
   - يمكن أن يحتوي الدرس على أكثر من ملف من النوع نفسه.
-  - `title` يميز الملفات المتعددة من النوع نفسه داخل الدرس.
+  - `UNIQUE(lesson_id, content_type, title)`: لا يمكن تكرار ملف بنفس العنوان والنوع داخل الدرس الواحد.
   - لا يمثل هذا الكيان مرجعًا مباشرًا إلى `SharedContentItem`; قراءة المحتوى المشترك للمقرر المرتبط بالمكتبة تتم مرجعيًا عبر `WorkspaceCourseReference` و`CourseVersion`.
 
 ### النطاق 5: نطاق المكتبة العامة وإدارة الإصدارات (Public Library & Versioning Domain)
@@ -338,6 +338,7 @@
   - `proposal_id`: Identifier, إلزامية (FK).
   - `target_version_lesson_id`: Identifier, اختيارية (FK).
   - `source_workspace_lesson_id`: Identifier, إلزامية (FK).
+  - `title`: Text, إلزامية (عنوان الملف لتمييزه وتحديده بدقة).
   - `change_action`: Enum (`ADD`, `MODIFY`, `DELETE`), إلزامية.
   - `content_type`: Enum (`SOURCE`, `OBJECTIVES`, `FLASHCARDS`, `UNDERSTANDING_CARDS`, `LESSON_QUIZ`), إلزامية.
   - `file_format`: Enum (`MARKDOWN`, `JSON`), إلزامية.
