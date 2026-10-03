@@ -431,11 +431,11 @@
 | `TeacherAccount` | يشير إلى | `Account` | `1 : 1` | إلزامية | Restrict |
 | `Workspace` | مملوكة لـ | `Account` | `N : 1` | إلزامية | Restrict على حذف `Account` |
 | `WorkspaceCourse` | ينتمي لـ | `Workspace` | `N : 1` | إلزامية | حذف منطقي عند طلب الحذف؛ `Cascade` فقط عند `Deferred Purge` الفيزيائي |
-| `WorkspaceCourseReference` | يحدد ارتباط | `WorkspaceCourse` | `1 : 1` | إلزامية | Cascade عند حذف `WorkspaceCourse` |
+| `WorkspaceCourseReference` | يحدد ارتباط | `WorkspaceCourse` | `1 : 1` | إلزامية | `Cascade` فقط عند `Deferred Purge` الفيزيائي لـ`WorkspaceCourse` |
 | `WorkspaceCourseReference` | يشير إلى | `LibraryCourse` | `N : 1` | إلزامية | Restrict عند حذف `LibraryCourse` |
 | `WorkspaceCourseReference` | يثبت إصدار | `CourseVersion` | `N : 1` | إلزامية | Restrict عند حذف `CourseVersion` |
 | `WorkspaceUnit` | تتبع لـ | `WorkspaceCourse` | `N : 1` | إلزامية | `Cascade` فقط عند `Deferred Purge` الفيزيائي لـ`WorkspaceCourse` |
-| `WorkspaceLesson` | يتبع لـ | `WorkspaceUnit` | `N : 1` | إلزامية | Cascade عند حذف `WorkspaceUnit` |
+| `WorkspaceLesson` | يتبع لـ | `WorkspaceUnit` | `N : 1` | إلزامية | `Cascade` فقط عند `Deferred Purge` الفيزيائي لـ`WorkspaceUnit` |
 | `WorkspaceContentItem` | ينتمي لمقرر | `WorkspaceCourse` | `N : 1` | إلزامية | `Cascade` فقط عند `Deferred Purge` الفيزيائي لـ`WorkspaceCourse` |
 | `WorkspaceContentItem` | يرتبط بدرس محلي | `WorkspaceLesson` | `N : 0..1` | اختيارية (للمحلي أو الدروس المضافة) | Cascade عند حذف `WorkspaceLesson` |
 | `WorkspaceContentItem` | يتجاوز درسًا معتمدًا | `VersionLesson` | `N : 0..1` | اختيارية (لتجاوز دروس المكتبة) | Restrict عند حذف `VersionLesson` |
