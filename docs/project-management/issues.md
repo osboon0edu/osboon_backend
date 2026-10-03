@@ -524,13 +524,13 @@ Issue Closure
 6. تُراجع Scope الخاصة بها.
 7. بعد اعتماد Scope، تصبح هي الـIssue النشطة للتنفيذ.
 
-بالنسبة لمرحلة التوثيق الحالية، يجب الوصول إلى حالة تسمح بالانتقال إلى **Logical Data Model** دون وجود غموض جوهري في:
+بالنسبة لمرحلة التوثيق، يجب الوصول إلى حالة تسمح بالانتقال إلى **Logical Data Model** دون وجود غموض جوهري في:
 - Terminology.
 - Domain Boundaries.
 - States & Workflows.
 - Entity / Relationship Classification.
 
-بعد اعتماد الـLogical Data Model يمكن الانتقال لاحقًا إلى تصميم وتنفيذ الـBackend باستخدام **Supabase**.
+بعد اعتماد الـLogical Data Model يمكن الانتقال إلى المرحلة التالية **Data Access & Security Model**، ثم لاحقًا إلى تصميم وتنفيذ الـBackend باستخدام **Supabase**.
 
 ## 16. قاعدة التغيير
 
