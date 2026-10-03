@@ -234,12 +234,12 @@
   - `id`: Identifier, إلزامية (PK).
   - `library_course_id`: Identifier, إلزامية (FK).
   - `version_number`: String (مثل: '1.0.0'), إلزامية.
-  - `manifest_storage_path`: String, اختيارية قبل النشر وتصبح إلزامية عند نشر الإصدار؛ تشير إلى ملف `manifest.json` مجمع ومضغوط في `Object Storage` يحتوي بنية الإصدار ووحداته ودروسه وروابط ملفاته.
+  - `manifest_storage_path`: String, إلزامية؛ تشير إلى ملف `manifest.json` مجمع ومضغوط في `Object Storage` يحتوي بنية الإصدار ووحداته ودروسه وروابط ملفاته.
   - `release_notes`: Text, اختيارية.
   - `published_at`: Timestamp, إلزامية.
 - **القيود المنطقية (Constraints):**
   - `UNIQUE(library_course_id, version_number)`: عدم تكرار رقم الإصدار لنفس المقرر.
-  - **قيد المانيفست المجمع:** يجب أن يكون `manifest_storage_path` غير فارغ عند نشر الإصدار.
+  - **قيد المانيفست المجمع:** يجب أن يكون `manifest_storage_path` غير فارغ عند إنشاء `CourseVersion`؛ لأن سجل الإصدار لا يُنشأ إلا بعد اعتماد المقترح وإتمام الإصدار المنشور.
   - **قيد عدم التعديل (Immutability Invariant):** بعد إنشاء السجل، يُحظر تعديل أي من سماته نهائيًا، بما في ذلك `manifest_storage_path` بعد النشر.
 
 #### 13. `SharedContentItem`
