@@ -147,7 +147,7 @@
 ### النطاق 3: نطاق البنية التعليمية (Learning Structure Domain)
 
 #### 8. `WorkspaceUnit`
-- **الغرض المفاهيمي:** التمثيل السحابي المتزامن للوحدة التعليمية داخل مقرر مساحة العمل؛ تُحفظ على الخادم عندما يفعّل المستخدم Cloud Sync لمقرر خاص أو مسودة محلية تحتاج إلى مزامنة سحابية. لا تُنشأ لهذه الوحدات نسخة سحابية مكررة لمقرر مكتبة تتم قراءته مرجعيًا.
+- **الغرض المفاهيمي:** التمثيل السحابي المتزامن للوحدة التعليمية داخل مقرر مساحة العمل؛ تُحفظ على الخادم عندما يفعّل المستخدم Cloud Sync لمقرر خاص أو مسودة محلية تحتاج إلى مزامنة سحابية. في المقرر `LIBRARY_REFERENCE` تُستخدم فقط للوحدات الإضافية الجديدة تمامًا (`Custom/Added Nodes`) ولا تُستخدم لاستنساخ الوحدات الأصلية من المكتبة.
 - **المفتاح الأساسي (PK):** `id` (Identifier)
 - **المفاتيح الأجنبية (FK):**
   - `workspace_course_id`: Identifier → يشير إلى `WorkspaceCourse.id`, إلزامية.
@@ -160,9 +160,10 @@
   - `updated_at`: Timestamp, إلزامية.
 - **القيود المنطقية (Constraints):**
   - `UNIQUE(workspace_course_id, order_index)`: ترتيب فريد للوحدات داخل المقرر.
+  - في `LIBRARY_REFERENCE`، لا تمثل هذه السجلات وحدات مستنسخة من المكتبة؛ تُستخدم فقط للوحدات الإضافية الجديدة تمامًا.
 
 #### 9. `WorkspaceLesson`
-- **الغرض المفاهيمي:** التمثيل السحابي المتزامن لأصغر حاوية هيكلية في المقرر؛ يستضيف عناصر المحتوى التعليمي عند مزامنة بيانات مساحة العمل الخاصة. لا تُنشأ نسخة سحابية مكررة للدرس المشترك في مقرر مكتبة؛ تتم قراءة الدرس من `CourseVersion` محليًا وفق الإصدار المثبت.
+- **الغرض المفاهيمي:** التمثيل السحابي المتزامن لأصغر حاوية هيكلية في المقرر؛ يستضيف عناصر المحتوى التعليمي عند مزامنة بيانات مساحة العمل الخاصة. في المقرر `LIBRARY_REFERENCE` تُستخدم فقط للدروس الإضافية الجديدة تمامًا (`Custom/Added Nodes`) ولا تُستخدم لاستنساخ الدروس الأصلية من المكتبة؛ الدروس الأصلية تُقرأ من `CourseVersion` وفق الإصدار المثبت.
 - **المفتاح الأساسي (PK):** `id` (Identifier)
 - **المفاتيح الأجنبية (FK):**
   - `unit_id`: Identifier → يشير إلى `WorkspaceUnit.id`, إلزامية.
@@ -175,33 +176,35 @@
   - `updated_at`: Timestamp, إلزامية.
 - **القيود المنطقية (Constraints):**
   - `UNIQUE(unit_id, order_index)`: ترتيب فريد للدروس داخل الوحدة.
+  - في `LIBRARY_REFERENCE`، لا تمثل هذه السجلات دروسًا مستنسخة من المكتبة؛ تُستخدم فقط للدروس الإضافية الجديدة تمامًا.
 
 ### النطاق 4: نطاق المحتوى التعليمي (Educational Content Domain)
 
 #### 10. `WorkspaceContentItem`
-- **الغرض المفاهيمي:** طبقة التجاوز الصريح (`Override Layer`) للمحتوى داخل مساحة العمل؛ تمثل ملفًا محليًا خاصًا إما لمقرر محلي الصنع بالكامل أو لتعديل ملف تابع لدرس معتمد في إصدار مكتبة مثبت، دون استنساخ شجرة الوحدات والدروس للمقرر المرجعي.
+- **الغرض المفاهيمي:** طبقة التجاوز الصريح (`Override Layer`) للمحتوى الخاص داخل مساحة العمل؛ تمثل إما ملفًا لمقرر محلي الصنع بالكامل، أو تعديلًا خاصًا (`Private Copy`) على ملف في درس معتمد لمقرر مرجعي، مع ضمان عزل البيانات لكل مساحة عمل.
 - **المفتاح الأساسي (PK):** `id` (Identifier)
 - **المفاتيح الأجنبية (FK):**
-  - `workspace_lesson_id`: Identifier → يشير إلى `WorkspaceLesson.id`, اختيارية (تُستخدم فقط للمقرر `LOCAL_AUTHOR`).
-  - `version_lesson_id`: Identifier → يشير إلى `VersionLesson.id`, اختيارية (تُستخدم فقط للمقرر `LIBRARY_REFERENCE`).
+  - `workspace_course_id`: Identifier → يشير إلى `WorkspaceCourse.id`, إلزامية.
+  - `workspace_lesson_id`: Identifier → يشير إلى `WorkspaceLesson.id`, اختيارية.
+  - `version_lesson_id`: Identifier → يشير إلى `VersionLesson.id`, اختيارية.
 - **السمات (Attributes):**
   - `id`: Identifier, إلزامية (PK).
+  - `workspace_course_id`: Identifier, إلزامية (FK).
   - `workspace_lesson_id`: Identifier, اختيارية (FK).
   - `version_lesson_id`: Identifier, اختيارية (FK).
   - `title`: Text, إلزامية.
   - `content_type`: Enum (`SOURCE`, `OBJECTIVES`, `FLASHCARDS`, `UNDERSTANDING_CARDS`, `LESSON_QUIZ`), إلزامية.
   - `file_format`: Enum (`MARKDOWN`, `JSON`), إلزامية.
-  - `storage_path`: String, إلزامية، يشير إلى المحتوى الفعلي في `Object Storage`.
+  - `storage_path`: String, إلزامية (يشير إلى المحتوى الفعلي في `Object Storage`).
   - `checksum`: String, إلزامية.
   - `created_at`: Timestamp, إلزامية.
   - `updated_at`: Timestamp, إلزامية.
 - **القيود المنطقية (Constraints):**
-  - يجب أن يكون أحد المرجعين فقط موجودًا: `workspace_lesson_id` أو `version_lesson_id`، ولا يجوز اجتماعهما أو خلوهما معًا.
-  - `workspace_lesson_id` يستخدم فقط عندما يكون `WorkspaceCourse.origin_type = LOCAL_AUTHOR`.
-  - `version_lesson_id` يستخدم فقط عندما يكون `WorkspaceCourse.origin_type = LIBRARY_REFERENCE`.
-  - للمحتوى المحلي: `UNIQUE(workspace_lesson_id, content_type, title)`.
-  - للتجاوز المرجعي: `UNIQUE(version_lesson_id, content_type, title)`.
-  - **حظر الاستنساخ الهيكلي:** المقرر من نوع `LIBRARY_REFERENCE` لا ينشئ سجلات `WorkspaceUnit` أو `WorkspaceLesson` للمحتوى المرجعي؛ البنية تقرأ من `VersionUnit` و`VersionLesson`.
+  - **قيد التخصيص الحصري (XOR):** يجب أن يرتبط السجل بأحد المرجعين فقط: إما `workspace_lesson_id` أو `version_lesson_id`، ولا يجوز اجتماعهما أو خلوهما معًا.
+  - إذا كان `WorkspaceCourse.origin_type = LOCAL_AUTHOR`، يجب استخدام `workspace_lesson_id`.
+  - إذا كان `WorkspaceCourse.origin_type = LIBRARY_REFERENCE`، يُستخدم `version_lesson_id` للتجاوز، ويُسمح بـ `workspace_lesson_id` فقط للدروس المضافة محليًا.
+  - قيد تفرد المحلي: `UNIQUE(workspace_lesson_id, content_type, title)`.
+  - **قيد تفرد التجاوز المعزول لمساحة العمل:** `UNIQUE(workspace_course_id, version_lesson_id, content_type, title)`.
 
 ### النطاق 5: نطاق المكتبة العامة وإدارة الإصدارات (Public Library & Versioning Domain)
 
@@ -428,8 +431,9 @@
 | `WorkspaceCourseReference` | يثبت إصدار | `CourseVersion` | `N : 1` | إلزامية | Restrict عند حذف `CourseVersion` |
 | `WorkspaceUnit` | تتبع لـ | `WorkspaceCourse` | `N : 1` | إلزامية | Cascade عند حذف `WorkspaceCourse` |
 | `WorkspaceLesson` | يتبع لـ | `WorkspaceUnit` | `N : 1` | إلزامية | Cascade عند حذف `WorkspaceUnit` |
-| `WorkspaceContentItem` | يستضيف ملفًا محليًا | `WorkspaceLesson` | `N : 0..1` | اختيارية (لـ`LOCAL_AUTHOR`) | Cascade عند حذف `WorkspaceLesson` |
-| `WorkspaceContentItem` | يتجاوز ملفًا في درس معتمد | `VersionLesson` | `N : 0..1` | اختيارية (لـ`LIBRARY_REFERENCE`) | Restrict عند حذف `VersionLesson` |
+| `WorkspaceContentItem` | ينتمي لمقرر | `WorkspaceCourse` | `N : 1` | إلزامية | Cascade عند حذف `WorkspaceCourse` |
+| `WorkspaceContentItem` | يرتبط بدرس محلي | `WorkspaceLesson` | `N : 0..1` | اختيارية (للمحلي أو الدروس المضافة) | Cascade عند حذف `WorkspaceLesson` |
+| `WorkspaceContentItem` | يتجاوز درسًا معتمدًا | `VersionLesson` | `N : 0..1` | اختيارية (لتجاوز دروس المكتبة) | Restrict عند حذف `VersionLesson` |
 | `CourseVersion` | يوثق إصدارًا لـ | `LibraryCourse` | `N : 1` | إلزامية | Restrict عند حذف `LibraryCourse` |
 | `LibraryCourse` | يشير إلى أحدث إصدار معتمد | `CourseVersion` | `1 : 0..1` | اختيارية (عبر `current_version_id`) | Restrict عند حذف `CourseVersion` |
 | `VersionUnit` | تتبع لـ | `CourseVersion` | `N : 1` | إلزامية | Restrict عند حذف `CourseVersion` |
@@ -464,7 +468,7 @@
 
 1. **ثبات الإصدارات المعتمدة:** عند نشر `CourseVersion` تصبح `CourseVersion` و`VersionUnit` و`VersionLesson` و`VersionManifestItem` للقراءة فقط.
 2. **فصل تخزين المحتوى عن البيانات الوصفية:** لا تُخزن محتويات الملفات الفعلية داخل جداول الـmetadata؛ تستخدم الكيانات الملفية `storage_path` إلى `Object Storage` مع `checksum`.
-3. **القراءة المرجعية وطبقة التجاوز عند التعديل:** المقرر المرتبط بالمكتبة يُقرأ مرجعيًا عبر `WorkspaceCourseReference` و`CourseVersion`، ولا تُستنسخ `WorkspaceUnit` أو `WorkspaceLesson` للمحتوى المرجعي. عند تعديل ملف، يُنشأ `WorkspaceContentItem` كطبقة تجاوز مرتبطة مباشرة بـ`VersionLesson`، وتُعرض النسخة الخاصة عند وجودها وإلا يُعرض الأصل من `VersionManifestItem` و`SharedContentItem`.
+3. **القراءة المرجعية وطبقة التجاوز عند التعديل:** المقرر المرتبط بالمكتبة يُقرأ مرجعيًا عبر `WorkspaceCourseReference` و`CourseVersion`. لا تُستنسخ الوحدات والدروس الأصلية من المكتبة؛ وتُستخدم `WorkspaceUnit` و`WorkspaceLesson` فقط للوحدات والدروس الإضافية الجديدة تمامًا (`Custom/Added Nodes`). عند تعديل ملف في درس معتمد، يُنشأ `WorkspaceContentItem` كطبقة تجاوز مرتبطة مباشرة بـ`VersionLesson`، وتُعرض النسخة الخاصة عند وجودها وإلا يُعرض الأصل من `VersionManifestItem` و`SharedContentItem`.
 4. **صحة ارتباط الإصدار المثبت وحالة المزامنة:** `pinned_version_id` يجب أن يتبع نفس `library_course_id`، و`sync_status` قيمة مشتقة آنيًا من مقارنة `pinned_version_id` مع `LibraryCourse.current_version_id` ولا تُخزن في `WorkspaceCourseReference`.
 5. **سلامة موضع التغيير المقترح:** `source_workspace_lesson_id` إلزامي لكل `ProposalContentChange`. في `MODIFY` و`DELETE` يكون `target_version_lesson_id` مطلوبًا، وفي `ADD` يكون مطلوبًا عند إضافة ملف إلى درس قائم، ويكون `NULL` فقط عند إضافة ملف يتبع درسًا جديدًا.
 6. **تجميد المحتوى المقترح أثناء المراجعة:** بعد `SUBMITTED` أو `UNDER_REVIEW` لا تُعدل سجلات `ProposalContentChange`.
@@ -482,7 +486,7 @@
 | المتطلب من المراحل السابقة | كيفية تحقيقه في النموذج المنطقي (Logical Data Model) |
 |---|---|
 | فصل الهوية عن الحسابات (Phase 2 & 3) | تمثيل منفصل لـ `Identity` و `Account`، مع السماح للهوية بامتلاك أكثر من حساب، وتخصص الحساب في `StudentAccount` أو `TeacherAccount`. |
-| استقلال بيئة مساحة العمل وعدم الاستنساخ التلقائي (Phase 3 & 4) | يعمل النظام وفق Local-First؛ وتظهر كيانات `Workspace*` على السحابة كطبقة Cloud Sync اختيارية. يشير `WorkspaceCourseReference` إلى الإصدار المثبت (`Pinned Version`) دون نسخ الملفات المشتركة، ولا تُستنسخ `WorkspaceUnit` أو `WorkspaceLesson` للمقرر `LIBRARY_REFERENCE`؛ تُستخدم `WorkspaceContentItem` كطبقة تجاوز مباشرة على `VersionLesson` عند وجود تعديل خاص. |
+| استقلال بيئة مساحة العمل وعدم الاستنساخ التلقائي (Phase 3 & 4) | يعمل النظام وفق Local-First؛ وتظهر كيانات `Workspace*` على السحابة كطبقة Cloud Sync اختيارية. يشير `WorkspaceCourseReference` إلى الإصدار المثبت (`Pinned Version`) دون نسخ الملفات المشتركة، ولا تُستنسخ الوحدات والدروس الأصلية من المكتبة؛ وتُستخدم `WorkspaceUnit` و`WorkspaceLesson` فقط للوحدات والدروس الإضافية الجديدة تمامًا (`Custom/Added Nodes`) في المقرر `LIBRARY_REFERENCE`، بينما تُستخدم `WorkspaceContentItem` كطبقة تجاوز مباشرة على `VersionLesson` عند وجود تعديل خاص. |
 | فصل الهيكل عن المحتوى (Phase 2 & 5) | `WorkspaceLesson` تمثل الحاوية، و `WorkspaceContentItem` يمثل ملف المحتوى بعنوانه ونوعه ومساره المستقل. |
 | إدارة الإصدارات على مستوى الملفات المتغيرة (Phase 2 & 6) | الفصل بين `SharedContentItem` وبنية الإصدار عبر `VersionUnit` و`VersionLesson` والربط عبر `VersionManifestItem` دون تكرار العناوين والترتيب. |
 | حسم تصنيف وسياق النشر (Phase 6 Deferred Point) | نمذجة `ClassificationTaxonomy` كشجرة متعددة الأبعاد وربطها بـ `LibraryCourseClassification`. |
