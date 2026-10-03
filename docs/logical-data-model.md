@@ -109,6 +109,7 @@
   - `status`: Enum (`ACTIVE`, `ARCHIVED`), إلزامية.
   - `created_at`: Timestamp, إلزامية.
   - `updated_at`: Timestamp, إلزامية.
+  - `deleted_at`: Timestamp, اختيارية (تستخدم للحذف المنطقي والتطهير الفيزيائي المؤجل).
 
 #### 6. `WorkspaceCourse`
 - **الغرض المفاهيمي:** التمثيل السحابي المتزامن للمقرر داخل مساحة العمل؛ يمثل النسخة السحابية من بيانات المستخدم المحلية عند تفعيل Cloud Sync، سواء كان المقرر منشأً محليًا أو مرتبطًا بالمكتبة. بالنسبة للمقرر المرتبط بالمكتبة، لا يتطلب هذا الكيان تكرار البنية والمحتوى المشتركين؛ يبقى كحاوية ارتباط، ويُقرأ المحتوى المرجعي من `WorkspaceCourseReference` و`CourseVersion`.
@@ -142,8 +143,7 @@
   - `updated_at`: Timestamp, إلزامية.
 - **القيود المنطقية (Constraints):**
   - يجب أن يتبع `pinned_version_id` لنفس `library_course_id`.
-  - **حظر التخزين السحابي لـ`sync_status`:** يُحظر تخزين `sync_status` كحقل في قاعدة البيانات السحابية لمنع الـWrite Amplification عند صدور إصدار جديد؛ وتُشتق الحالة في طبقة العميل (Client Layer) بمقارنة `pinned_version_id` مع `LibraryCourse.current_version_id` المحملة محليًا:
-    - `sync_status` ليست سمة مخزنة؛ تُشتق آنيًا بمقارنة `pinned_version_id` مع `LibraryCourse.current_version_id`:
+  - **حظر التخزين السحابي لـ `sync_status`:** يُحظر تخزين `sync_status` كحقل في قاعدة البيانات السحابية لمنع الـ Write Amplification عند صدور إصدار جديد؛ وتُشتق الحالة آنيًا في طبقة العميل (Client Layer) بمقارنة `pinned_version_id` مع `LibraryCourse.current_version_id` المحملة محليًا وفق القيمتين:
     - `UP_TO_DATE`: عندما يتطابق الإصداران.
     - `UPDATE_AVAILABLE`: عندما يختلف الإصداران.
 
