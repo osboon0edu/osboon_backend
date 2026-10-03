@@ -233,10 +233,10 @@ Future Product Domains / Features
 
 ## 14. نقطة الانتقال الحالية
 
-المشروع أنهى مراحل التأسيس والتوثيق السابقة داخل Root #1 حتى **Final Alignment**.
+المشروع أنهى مراحل التأسيس والتوثيق السابقة داخل Root #1 حتى **Final Alignment**، ثم استكمل واعتمد **Logical Data Model (Phase 7)** بعد دمج PR #17.
 
 المرحلة التالية داخل Root #1 هي:
 
-**Logical Data Model**
+**Data Access & Security Model**
 
 وبعد استكمال المراحل المتبقية من Root #1 واعتمادها، يكون الانتقال إلى **Root #2 — Backend Foundation** هو الانتقال الرئيسي التالي.
