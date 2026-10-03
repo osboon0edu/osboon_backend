@@ -59,6 +59,7 @@
   - `status`: Enum (`ACTIVE`, `SUSPENDED`), إلزامية.
   - `created_at`: Timestamp, إلزامية.
   - `updated_at`: Timestamp, إلزامية.
+  - `deleted_at`: Timestamp, اختيارية (تستخدم للحذف المنطقي والتطهير الفيزيائي المؤجل).
 - **القيود المنطقية (Constraints):**
   - لا يخزن `Account` مرجع `Identity` مباشرة.
   - يحدد `StudentAccount` أو `TeacherAccount` السياق التعليمي للحساب ويربطه بالـ`Identity` المالكة.
@@ -122,6 +123,7 @@
   - `origin_type`: Enum (`LOCAL_AUTHOR`, `LIBRARY_REFERENCE`), إلزامية.
   - `created_at`: Timestamp, إلزامية.
   - `updated_at`: Timestamp, إلزامية.
+  - `deleted_at`: Timestamp, اختيارية (تستخدم للحذف المنطقي والتطهير الفيزيائي المؤجل).
 
 #### 7. `WorkspaceCourseReference`
 - **الغرض المفاهيمي:** ربط مقرر مساحة العمل بإصدار محدد ومثبت (`Pinned Version`) من المكتبة العامة.
@@ -140,7 +142,8 @@
   - `updated_at`: Timestamp, إلزامية.
 - **القيود المنطقية (Constraints):**
   - يجب أن يتبع `pinned_version_id` لنفس `library_course_id`.
-  - `sync_status` ليست سمة مخزنة؛ تُشتق آنيًا بمقارنة `pinned_version_id` مع `LibraryCourse.current_version_id`:
+  - **حظر التخزين السحابي لـ`sync_status`:** يُحظر تخزين `sync_status` كحقل في قاعدة البيانات السحابية لمنع الـWrite Amplification عند صدور إصدار جديد؛ وتُشتق الحالة في طبقة العميل (Client Layer) بمقارنة `pinned_version_id` مع `LibraryCourse.current_version_id` المحملة محليًا:
+    - `sync_status` ليست سمة مخزنة؛ تُشتق آنيًا بمقارنة `pinned_version_id` مع `LibraryCourse.current_version_id`:
     - `UP_TO_DATE`: عندما يتطابق الإصداران.
     - `UPDATE_AVAILABLE`: عندما يختلف الإصداران.
 
@@ -231,11 +234,13 @@
   - `id`: Identifier, إلزامية (PK).
   - `library_course_id`: Identifier, إلزامية (FK).
   - `version_number`: String (مثل: '1.0.0'), إلزامية.
+  - `manifest_storage_path`: String, اختيارية قبل النشر وتصبح إلزامية عند نشر الإصدار؛ تشير إلى ملف `manifest.json` مجمع ومضغوط في `Object Storage` يحتوي بنية الإصدار ووحداته ودروسه وروابط ملفاته.
   - `release_notes`: Text, اختيارية.
   - `published_at`: Timestamp, إلزامية.
 - **القيود المنطقية (Constraints):**
   - `UNIQUE(library_course_id, version_number)`: عدم تكرار رقم الإصدار لنفس المقرر.
-  - **قيد عدم التعديل (Immutability Invariant):** بعد إنشاء السجل، يُحظر تعديل أي من سماته نهائيًا.
+  - **قيد المانيفست المجمع:** يجب أن يكون `manifest_storage_path` غير فارغ عند نشر الإصدار.
+  - **قيد عدم التعديل (Immutability Invariant):** بعد إنشاء السجل، يُحظر تعديل أي من سماته نهائيًا، بما في ذلك `manifest_storage_path` بعد النشر.
 
 #### 13. `SharedContentItem`
 - **الغرض المفاهيمي:** الأصول التعليمية المشتركة المستقرة المملوكة للمكتبة العامة (`Library Ownership`).
@@ -425,13 +430,13 @@
 | `Identity` | تملك | `TeacherAccount` | `1 : 0..1` | اختيارية | Restrict |
 | `TeacherAccount` | يشير إلى | `Account` | `1 : 1` | إلزامية | Restrict |
 | `Workspace` | مملوكة لـ | `Account` | `N : 1` | إلزامية | Restrict على حذف `Account` |
-| `WorkspaceCourse` | ينتمي لـ | `Workspace` | `N : 1` | إلزامية | Cascade عند حذف `Workspace` |
+| `WorkspaceCourse` | ينتمي لـ | `Workspace` | `N : 1` | إلزامية | حذف منطقي عند طلب الحذف؛ `Cascade` فقط عند `Deferred Purge` الفيزيائي |
 | `WorkspaceCourseReference` | يحدد ارتباط | `WorkspaceCourse` | `1 : 1` | إلزامية | Cascade عند حذف `WorkspaceCourse` |
 | `WorkspaceCourseReference` | يشير إلى | `LibraryCourse` | `N : 1` | إلزامية | Restrict عند حذف `LibraryCourse` |
 | `WorkspaceCourseReference` | يثبت إصدار | `CourseVersion` | `N : 1` | إلزامية | Restrict عند حذف `CourseVersion` |
-| `WorkspaceUnit` | تتبع لـ | `WorkspaceCourse` | `N : 1` | إلزامية | Cascade عند حذف `WorkspaceCourse` |
+| `WorkspaceUnit` | تتبع لـ | `WorkspaceCourse` | `N : 1` | إلزامية | `Cascade` فقط عند `Deferred Purge` الفيزيائي لـ`WorkspaceCourse` |
 | `WorkspaceLesson` | يتبع لـ | `WorkspaceUnit` | `N : 1` | إلزامية | Cascade عند حذف `WorkspaceUnit` |
-| `WorkspaceContentItem` | ينتمي لمقرر | `WorkspaceCourse` | `N : 1` | إلزامية | Cascade عند حذف `WorkspaceCourse` |
+| `WorkspaceContentItem` | ينتمي لمقرر | `WorkspaceCourse` | `N : 1` | إلزامية | `Cascade` فقط عند `Deferred Purge` الفيزيائي لـ`WorkspaceCourse` |
 | `WorkspaceContentItem` | يرتبط بدرس محلي | `WorkspaceLesson` | `N : 0..1` | اختيارية (للمحلي أو الدروس المضافة) | Cascade عند حذف `WorkspaceLesson` |
 | `WorkspaceContentItem` | يتجاوز درسًا معتمدًا | `VersionLesson` | `N : 0..1` | اختيارية (لتجاوز دروس المكتبة) | Restrict عند حذف `VersionLesson` |
 | `CourseVersion` | يوثق إصدارًا لـ | `LibraryCourse` | `N : 1` | إلزامية | Restrict عند حذف `LibraryCourse` |
@@ -459,11 +464,13 @@
 ## 5. القيود المنطقية للحفاظ على الثوابت (Logical Invariants & Rules)
 ### قواعد السلوك عند الحذف (Referential Actions)
 
-- **Cascade:** يُستخدم فقط للعناصر التابعة التي لا تحمل معنى مستقلًا خارج الكيان الأب، مثل بنية ومحتوى مساحة العمل عند حذف `WorkspaceCourse`، وعناصر المقترح عند حذف `UpdateProposal`، ومهمة المراجعة عند حذف الدعوة.
+- **Cascade:** يُستخدم فقط أثناء التطهير الفيزيائي المؤجل للعناصر التابعة التي لا تحمل معنى مستقلًا خارج الكيان الأب، مثل بنية ومحتوى مساحة العمل بعد `Deferred Purge` لـ`WorkspaceCourse`، وعناصر المقترح عند حذف `UpdateProposal`، ومهمة المراجعة عند حذف الدعوة.
 - **Restrict:** يُستخدم للكيانات المرجعية أو التاريخية أو المرتبطة بحقوق/سجل دائم، مثل `Account`, `LibraryCourse`, `CourseVersion` و`SharedContentItem`؛ يمنع حذف الأصل ما دامت هناك سجلات تعتمد عليه.
 - **LibraryCourse / CourseVersion:** لا يجوز حذف `LibraryCourse` إذا كان له `CourseVersion` أو `WorkspaceCourseReference` أو `UpdateProposal` أو تصنيف مرتبط. ولا يجوز حذف `CourseVersion` إذا كان مرتبطًا بـ`WorkspaceCourseReference` أو `LibraryCourse.current_version_id` أو بنية الإصدار أو إسناد مساهمين/مراجعين.
-- **Account:** لا يُحذف `Account` إذا كان مستخدمًا كمالك أو مؤلف أو مدعو أو مراجع أو مساهم؛ يُستخدم `status = SUSPENDED` بدلًا من حذف الحساب المحتفظ بسجل تاريخي.
-- **Workspace:** حذف `Workspace` يزيل كياناتها التابعة عبر سلسلة `Cascade`، لكن لا يمتد الحذف إلى `Account` أو `LibraryCourse` أو `CourseVersion`.
+- **Account:** يعتمد الحذف المنطقي عبر تسجيل `deleted_at` بدل الحذف الفيزيائي المباشر، مع الاحتفاظ بالسجل التاريخي واستخدام `status = SUSPENDED` عند الحاجة. يُؤجل التطهير الفيزيائي إلى عملية خلفية غير متزامنة بعد التحقق من عدم وجود مراجع تاريخية تمنع الحذف.
+- **Workspace:** يعتمد الحذف المنطقي عبر تسجيل `deleted_at` بدل إزالة كياناته التابعة مباشرة عبر `Cascade`. يُؤجل التطهير الفيزيائي، وعند تنفيذه يمكن تنظيف الكيانات التابعة التي لا تحمل معنى مستقلًا عبر `Cascade`.
+- **WorkspaceCourse:** يعتمد الحذف المنطقي عبر تسجيل `deleted_at` بدل الحذف المتسلسل المباشر. يُؤجل التطهير الفيزيائي إلى عملية خلفية غير متزامنة، وعند تنفيذه يمكن تنظيف المسودات والبيانات التابعة عبر `Cascade`.
+- **الحذف الناعم والتطهير المتأخر (Soft Delete & Deferred Purge):** الكيانات الكبيرة (`Account`, `Workspace`, `WorkspaceCourse`) تعتمد الحذف المنطقي بتسجيل `deleted_at` لمنع قفل الجداول المتزامنة عبر `CASCADE` المباشر، مع بقاء الحذف المتسلسل مقتصرًا على تنظيف المسودات غير المعتمدة والبيانات التابعة عبر مهام خلفية غير متزامنة.
 - **الهدف من هذه القواعد:** منع فقدان السجل التاريخي أو كسر المراجع، مع السماح بالتطهير الآمن للبيانات التابعة التي لا تستقل دلاليًا عن مالكها.
 
 1. **ثبات الإصدارات المعتمدة:** عند نشر `CourseVersion` تصبح `CourseVersion` و`VersionUnit` و`VersionLesson` و`VersionManifestItem` للقراءة فقط.
