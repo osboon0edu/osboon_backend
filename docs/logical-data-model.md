@@ -359,7 +359,7 @@
   - `created_at`: Timestamp, إلزامية.
 - **القيود المنطقية (Constraints):**
   - `ADD` لملف يتبع درسًا قائمًا: يجب أن يكون `target_version_lesson_id IS NOT NULL` للإشارة إلى الدرس القائم.
-  - `ADD` لملف يتبع درسًا جديدًا: يجب أن يكون `target_version_lesson_id = NULL`، ويستمد النظام عنوان الدرس وترتيبه من `source_workspace_lesson_id`.
+  - `ADD` لملف يتبع درسًا جديدًا: يجب أن يكون `target_version_lesson_id = NULL`، ويستمد النظام عنوان الدرس وترتيبه من `source_workspace_lesson_id`. في `LIBRARY_REFERENCE` يكون هذا الدرس من الدروس الإضافية الجديدة تمامًا (`Custom/Added Nodes`).
   - `MODIFY` و`DELETE`: يجب أن يكون `target_version_lesson_id IS NOT NULL` للإشارة الصريحة إلى الدرس القائم في الإصدار المستهدف.
   - لا تُستخدم العناوين النصية (`unit_title`, `lesson_title`) كمرجع هيكلي للموقع.
 
